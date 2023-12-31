@@ -1,4 +1,4 @@
 reset
 rm -rf ./docs
-docker-compose run --rm nuxt3 yarn generate
-cp -r ./nuxt3/.output/public ./docs
+docker-compose run --rm frontend yarn generate
+cp -r ./frontend/.output/public ./docs
