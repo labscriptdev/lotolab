@@ -20,7 +20,10 @@
           </colgroup>
 
           <tbody>
-            <tr>
+            <tr :style="zebraStyle(bind.index)">
+              <!-- <td>
+                <pre>{{ bind.index % props.zebra.length }}</pre>
+              </td> -->
               <slot name="row" v-bind="bind"></slot>
             </tr>
           </tbody>
@@ -38,7 +41,21 @@ const props = defineProps({
   items: { type: Array, default: () => [] },
   height: { type: String, default: "400px" },
   density: { type: String, default: "default" },
+  zebra: { type: [Boolean, Array], default: false },
 });
 
 const emit = defineEmits(["update:modelValue"]);
+
+const zebraStyle = (index) => {
+  if (!props.zebra) return null;
+
+  let colors = ["transparent", "#0000000f"];
+
+  if (Array.isArray(props.zebra)) {
+    colors = props.zebra;
+  }
+
+  const style = colors[index % colors.length];
+  return `background-color: ${style};`;
+};
 </script>

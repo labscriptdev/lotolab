@@ -1,47 +1,6 @@
 <template>
   <div>
     <v-row>
-      <v-col cols="12" md="7">
-        <v-table-virtual density="compact" :items="loto.response.data" height="80vh" v-if="loto.response.data[0]">
-          <template #colgroup="bind">
-            <col width="80px" />
-            <col width="150px" />
-            <col width="*" />
-          </template>
-
-          <template #header="bind">
-            <th>Sorteio</th>
-            <th>Data</th>
-            <th>Números</th>
-          </template>
-
-          <template #row="bind">
-            <td>{{ bind.item.number }}</td>
-            <td>{{ bind.item.date }}</td>
-            <td>
-              <div class="d-flex flex-wrap" style="gap: 6px; padding: 4px">
-                <v-btn color="grey-lighten-3" elevation="0" @click="loto.numbersSet(bind.item.numbers)">
-                  <v-icon icon="ic:round-keyboard-double-arrow-right" />
-                </v-btn>
-
-                <template v-for="nn in bind.item.numbers">
-                  <v-btn
-                    color="grey-lighten-3"
-                    elevation="0"
-                    @click="loto.numberToggle(nn)"
-                    :class="{
-                      'bg-primary': loto.numbers.includes(nn),
-                    }"
-                  >
-                    {{ nn }}
-                  </v-btn>
-                </template>
-              </div>
-            </td>
-          </template>
-        </v-table-virtual>
-      </v-col>
-
       <v-col cols="12" md="5">
         <v-card elevation="0">
           <v-card-text>
@@ -83,13 +42,71 @@
 
             <br />
             <div class="d-flex justify-end" style="gap: 15px">
-              <!-- <v-btn color="primary">Colar</v-btn> -->
-              <v-btn color="primary" @click="loto.numbers = []">Limpar</v-btn>
+              <v-btn color="primary" @click="clipboardGet()">Colar</v-btn>
+              <v-btn color="primary" @click="loto.numbers = []" :disabled="loto.numbers.length == 0">Limpar</v-btn>
             </div>
 
-            <!-- <pre>loto: {{ loto }}</pre> -->
+            <!-- <pre>loto2: {{ loto2 }}</pre> -->
           </v-card-text>
         </v-card>
+      </v-col>
+
+      <v-col cols="12" md="7">
+        <v-table-virtual
+          density="compact"
+          :items="loto.response.data"
+          height="80vh"
+          :zebra="true"
+          v-if="loto.response.data[0]"
+        >
+          <template #colgroup="bind">
+            <col width="80px" />
+            <col width="150px" />
+            <col width="*" />
+            <col width="50px" />
+          </template>
+
+          <template #header="bind">
+            <th>Sorteio</th>
+            <th>Data</th>
+            <th>Números</th>
+            <th>Ações</th>
+          </template>
+
+          <template #row="bind">
+            <td>{{ bind.item.number }}</td>
+            <td>{{ bind.item.date }}</td>
+            <td>
+              <div class="d-flex flex-wrap" style="gap: 6px; padding: 4px">
+                <template v-for="nn in bind.item.numbers">
+                  <v-btn
+                    color="grey-lighten-3"
+                    elevation="0"
+                    @click="loto.numberToggle(nn)"
+                    :class="{
+                      'bg-primary': loto.numbers.includes(nn),
+                    }"
+                  >
+                    {{ nn }}
+                  </v-btn>
+                </template>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex">
+                <v-defaults-provider :defaults="actionsDefaultsProvider">
+                  <template v-for="act in actions(bind)">
+                    <v-tooltip :text="act.title || null">
+                      <template #activator="bind">
+                        <v-btn v-bind="{ ...act, ...bind.props }" />
+                      </template>
+                    </v-tooltip>
+                  </template>
+                </v-defaults-provider>
+              </div>
+            </td>
+          </template>
+        </v-table-virtual>
       </v-col>
     </v-row>
   </div>
@@ -105,56 +122,32 @@ const format = useFormat();
 
 const route = useRoute();
 
-const loto = useAxios({
-  method: "get",
-  url: `https://raw.githubusercontent.com/labscriptdev/static-api/main/data/loteria/${route.params.slug}.json`,
-  autoSubmit: true,
-  response: { data: [] },
-  filters: {
-    response(resp) {
-      resp.data.data = resp.data.data.reverse().map((item) => {
-        item.numbers = item.numbers.map((nn) => {
-          return format.padStart(nn, 2, "0");
-        });
-        return item;
-      });
-      return resp;
-    },
-  },
-  numbersStr: "",
-  numbers: [],
-  numbersToArray() {
-    loto.numbers = loto.numbersStr
-      .split(/[^0-9]/)
-      .filter((v) => !!v)
-      .map((n) => filter.padStart(n));
-  },
-  numberToggle(n) {
-    const index = loto.numbers.indexOf(n);
-    index >= 0 ? loto.numbers.splice(index, 1) : loto.numbers.push(n);
-    loto.numbersStr = loto.numbers.join(" ");
-  },
-  numbersSet(nns) {
-    loto.numbers = JSON.parse(JSON.stringify(nns));
-    loto.numbersStr = loto.numbers.join(" ");
-  },
-  table: computed(() => {
-    let rows = [],
-      row = [];
-    for (let n = loto.response.rangeStart; n <= loto.response.rangeFinal; n++) {
-      row.push(filter.padStart(n));
-      if (row.length == loto.response.rangePerRow) {
-        rows.push(row);
-        row = [];
-      }
-    }
-    return rows;
-  }),
+import useLoto from "@/composables/useLoto";
+const loto = useLoto({
+  type: route.params.slug,
 });
 
-const filter = {
-  padStart(n) {
-    return String(n).padStart(2, "0");
-  },
+const clipboardGet = async () => {
+  const text = await navigator.clipboard.readText();
+  loto.numbers = text
+    .split(/[^0-9]/)
+    .filter((v) => !!v)
+    .map(loto.padStart);
+};
+
+const actionsDefaultsProvider = {
+  VBtn: { flat: true, size: 35 },
+};
+
+const actions = (bind) => {
+  return {
+    selectAll: {
+      icon: "material-symbols:text-select-jump-to-beginning-rounded",
+      title: "Selecionar tudo",
+      onClick() {
+        loto.numbersSet(bind.item.numbers);
+      },
+    },
+  };
 };
 </script>
