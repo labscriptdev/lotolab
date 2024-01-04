@@ -19,7 +19,7 @@ import useAxios from "@/composables/useAxios";
 
 const types = useAxios({
   method: "get",
-  url: "https://raw.githubusercontent.com/labscriptdev/static-api/main/data/loteria/index.json",
+  url: "https://raw.githubusercontent.com/labscriptdev/static-api/main/data/loteria.json",
   autoSubmit: true,
   response: [],
 });
