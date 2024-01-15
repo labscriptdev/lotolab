@@ -2,6 +2,10 @@
 
 import useAxios from "@/composables/useAxios";
 
+import AlreadyMade from "@/utils/lotto/analisys/AlreadyMade";
+import NoBorderNumbers from "@/utils/lotto/analisys/NoBorderNumbers";
+import BadsLast3 from "@/utils/lotto/analisys/BadsLast3";
+
 export default (options = {}) => {
   options = {
     type: "mega-sena",
@@ -46,6 +50,15 @@ export default (options = {}) => {
         }
       }
       return rows;
+    }),
+    analisys: computed(() => {
+      return [
+        new AlreadyMade(r.response, r.numbers),
+        new NoBorderNumbers(r.response, r.numbers),
+        new BadsLast3(r.response, r.numbers),
+      ].filter((resp) => {
+        return resp.message || resp.goods.length > 0 || resp.bads.length > 0;
+      });
     }),
   });
 

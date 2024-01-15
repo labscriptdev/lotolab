@@ -46,7 +46,27 @@
               <v-btn color="primary" @click="loto.numbers = []" :disabled="loto.numbers.length == 0">Limpar</v-btn>
             </div>
 
-            <!-- <pre>loto2: {{ loto2 }}</pre> -->
+            <br />
+            <div class="d-flex flex-column" style="gap: 10px">
+              <template v-for="o in loto.analisys">
+                <v-alert :type="o.type">
+                  <div v-html="o.name" v-if="!o.message"></div>
+                  <div v-html="o.message" v-if="o.message"></div>
+                  <div class="d-flex flex-wrap mt-1" style="gap: 5px" v-if="o.goods.length > 0">
+                    <template v-for="n in o.goods">
+                      <v-btn color="success" elevation="0">{{ n }}</v-btn>
+                    </template>
+                  </div>
+                  <div class="d-flex flex-wrap mt-1" style="gap: 5px" v-if="o.bads.length > 0">
+                    <template v-for="n in o.bads">
+                      <v-btn color="error" elevation="0">{{ n }}</v-btn>
+                    </template>
+                  </div>
+                </v-alert>
+              </template>
+            </div>
+
+            <!-- <pre>loto.analisys: {{ loto.analisys }}</pre> -->
           </v-card-text>
         </v-card>
       </v-col>

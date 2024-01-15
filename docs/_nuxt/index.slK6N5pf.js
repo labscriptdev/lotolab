@@ -1,0 +1,1 @@
+import{v as e,t}from"./entry.3QWt4LMD.js";const s={__name:"index",props:{modelValue:{type:[String],default:""}},emits:["update:modelValue"],setup(o,{emit:a}){return(l,r)=>(t(),e("div",null,"Escolha um sorteio"))}};export{s as default};

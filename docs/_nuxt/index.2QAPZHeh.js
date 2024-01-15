@@ -1,1 +1,0 @@
-import{v as e,t}from"./entry.XMb_T0iN.js";const s={__name:"index",props:{modelValue:{type:[String],default:""}},emits:["update:modelValue"],setup(o,{emit:a}){return(l,r)=>(t(),e("div",null,"Escolha um sorteio"))}};export{s as default};
